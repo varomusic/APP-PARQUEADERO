@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parqueadero App</title>
+
+  <!-- =========================
+       ESTILOS CSS DE LA APP
+       ========================= -->
+  <style>
+    /* Reset básico para que todo se vea más ordenado */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7fb;
+      color: #1f2937;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h2 {
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: #eef4ff;
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .stat-box h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #374151;
+    }
+
+    .stat-box p {
+      font-size: 26px;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    .available {
+      margin-top: 6px;
+      color: #2563eb;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      padding: 8px 12px;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .message.success {
+      background: #dcfce7;
+      color: #166534;
+      display: block;
+    }
+
+    .message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .empty {
+      color: #6b7280;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Sistema de Parqueadero</h1>
+    <p class="subtitle">
+      Registro de entrada y salida de carros y motos con Supabase
+    </p>
+
+    <!-- =========================
+         RESUMEN DE CUPOS
+         ========================= -->
+    <div class="stats">
+      <div class="stat-box">
+        <h3>Carros ocupados</h3>
+        <p id="carrosOcupados">0 / 10</p>
+        <div class="available" id="carrosDisponibles">Disponibles: 10</div>
+      </div>
+
+      <div class="stat-box">
+        <h3>Motos ocupadas</h3>
+        <p id="motosOcupadas">0 / 10</p>
+        <div class="available" id="motosDisponibles">Disponibles: 10</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- =========================
+           FORMULARIO DE ENTRADA
+           ========================= -->
+      <div class="card">
+        <h2>Registrar entrada</h2>
+
+        <label for="placa">Placa</label>
+        <input
+          type="text"
+          id="placa"
+          placeholder="Ejemplo: ABC123"
+          maxlength="10"
+        />
+
+        <label for="tipo">Tipo de vehículo</label>
+        <select id="tipo">
+          <option value="">Seleccione una opción</option>
+          <option value="carro">carro</option>
+          <option value="moto">moto</option>
+        </select>
+
+        <button class="btn-primary" id="btnRegistrar">
+          Registrar entrada
+        </button>
+
+        <div id="mensaje" class="message"></div>
+      </div>
+
+      <!-- =========================
+           TABLA DE VEHÍCULOS ACTIVOS
+           ========================= -->
+      <div class="card">
+        <h2>Vehículos dentro del parqueadero</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Placa</th>
+                <th>Tipo</th>
+                <th>Hora entrada</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaVehiculos">
+              <!-- Aquí JavaScript insertará las filas -->
+            </tbody>
+          </table>
+        </div>
+
+        <p id="sinDatos" class="empty">No hay vehículos activos en este momento.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       LIBRERÍA DE SUPABASE
+       Esta línea carga la librería oficial desde internet
+       para poder conectar nuestro HTML con Supabase.
+       ========================= -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    /* =========================================================
+       1. CONFIGURACIÓN DE SUPABASE
+       =========================================================
+       Aquí debes pegar los datos de tu proyecto:
+       - Project URL
+       - anon public key
+
+       Esos datos se encuentran en:
+       Project Settings -> API
+    ========================================================= */
+
+    const SUPABASE_URL = "https://topszzjicjfvpigqkiok.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcHN6emppY2pmdnBpZ3FraW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNDkxODgsImV4cCI6MjA4ODcyNTE4OH0.E5o2APQ2RMgR2lFzqZwMnygUAFx2kTVGELCEJ1RmONM";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* =========================================================
+       2. REFERENCIAS A ELEMENTOS DEL HTML
+       =========================================================
+       Aquí capturamos elementos del DOM para poder usarlos
+       con JavaScript: inputs, botones, tabla y mensajes.
+    ========================================================= */
+
+    const placaInput = document.getElementById("placa");
+    const tipoSelect = document.getElementById("tipo");
+    const btnRegistrar = document.getElementById("btnRegistrar");
+    const mensaje = document.getElementById("mensaje");
+    const tablaVehiculos = document.getElementById("tablaVehiculos");
+    const sinDatos = document.getElementById("sinDatos");
+
+    const carrosOcupados = document.getElementById("carrosOcupados");
+    const motosOcupados = document.getElementById("motosOcupados");
+    const carrosDisponibles = document.getElementById("carrosDisponibles");
+    const motosDisponibles = document.getElementById("motosDisponibles");
+
+    /* =========================================================
+       3. FUNCIÓN PARA MOSTRAR MENSAJES
+       =========================================================
+       Esta función sirve para mostrar mensajes visuales:
+       - éxito
+       - error
+    ========================================================= */
+
+    function mostrarMensaje(texto, tipo) {
+      mensaje.textContent = texto;
+      mensaje.className = "message";
+      mensaje.classList.add(tipo);
+    }
+
+    /* =========================================================
+       4. FUNCIÓN PARA LIMPIAR MENSAJE
+       =========================================================
+       La usamos cuando queremos ocultar mensajes anteriores.
+    ========================================================= */
+
+    function limpiarMensaje() {
+      mensaje.textContent = "";
+      mensaje.className = "message";
+    }
+
+    /* =========================================================
+       5. FORMATEAR FECHA A HORA DE COLOMBIA
+       =========================================================
+       Supabase guarda fechas en UTC.
+       Aquí convertimos la fecha para mostrarla en la zona
+       horaria de Bogotá / Colombia.
+    ========================================================= */
+
+    function formatearFechaColombia(fechaISO) {
+      if (!fechaISO) return "";
+
+      return new Date(fechaISO).toLocaleString("es-CO", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    /* =========================================================
+       6. CARGAR VEHÍCULOS ACTIVOS
+       =========================================================
+       Esta función consulta Supabase y trae únicamente
+       los vehículos cuyo estado sea "activo".
+    ========================================================= */
+
+    async function cargarVehiculosActivos() {
+      const { data, error } = await supabase
+        .from("parqueadero")
+        .select("*")
+        .eq("estado", "activo")
+        .order("hora_entrada", { ascending: false });
+
+      if (error) {
+        console.error("Error al cargar vehículos:", error);
+        mostrarMensaje("Error al cargar vehículos activos.", "error");
+        return;
+      }
+
+      // Limpiamos el contenido actual de la tabla
+      tablaVehiculos.innerHTML = "";
+
+      // Si no hay datos, mostramos el mensaje de tabla vacía
+      if (!data || data.length === 0) {
+        sinDatos.style.display = "block";
+      } else {
+        sinDatos.style.display = "none";
+      }
+
+      // Recorremos los registros y creamos una fila por cada vehículo
+      data.forEach((vehiculo) => {
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+          <td>${vehiculo.placa}</td>
+          <td>${vehiculo.tipo_vehiculo}</td>
+          <td>${formatearFechaColombia(vehiculo.hora_entrada)}</td>
+          <td>${vehiculo.estado}</td>
+          <td>
+            <button class="btn-danger" onclick="registrarSalida(${vehiculo.id})">
+              Registrar salida
+            </button>
+          </td>
+        `;
+
+        tablaVehiculos.appendChild(fila);
+      });
+    }
+
+    /* =========================================================
+       7. CONTAR CUPOS DE CARROS Y MOTOS
+       =========================================================
+       Esta función consulta cuántos carros y motos activos
+       hay en este momento y actualiza los indicadores visuales.
+    ========================================================= */
+
+    async function cargarCupos() {
+      // Consultar carros activos
+      const { count: totalCarros, error: errorCarros } = await supabase
+        .from("parqueadero")
+        .select("*", { count: "exact", head: true })
+        .eq("tipo_vehiculo", "carro")
+        .eq("estado", "activo");
+
+      // Consultar motos activas
+      const { count: totalMotos, error: errorMotos } = await supabase
+        .from("parqueadero")
+        .select("*", { count: "exact", head: true })
+        .eq("tipo_vehiculo", "moto")
+        .eq("estado", "activo");
+
+      if (errorCarros || errorMotos) {
+        console.error("Error al cargar cupos:", errorCarros || errorMotos);
+        return;
+      }
+
+      const carros = totalCarros || 0;
+      const motos = totalMotos || 0;
+
+      carrosOcupados.textContent = `${carros} / 10`;
+      motosOcupados.textContent = `${motos} / 10`;
+
+      carrosDisponibles.textContent = `Disponibles: ${10 - carros}`;
+      motosDisponibles.textContent = `Disponibles: ${10 - motos}`;
+    }
+
+    /* =========================================================
+       8. VALIDAR SI YA EXISTE UNA PLACA ACTIVA
+       =========================================================
+       Esto evita que el mismo vehículo se registre dos veces
+       si aún no ha salido.
+    ========================================================= */
+
+    async function placaYaActiva(placa) {
+      const { data, error } = await supabase
+        .from("parqueadero")
+        .select("id")
+        .eq("placa", placa)
+        .eq("estado", "activo");
+
+      if (error) {
+        console.error("Error validando placa:", error);
+        return false;
+      }
+
+      return data.length > 0;
+    }
+
+    /* =========================================================
+       9. REGISTRAR ENTRADA
+       =========================================================
+       Aquí ocurre la lógica principal:
+       - leer placa y tipo
+       - validar campos
+       - validar cupo máximo
+       - validar duplicado
+       - guardar en Supabase
+    ========================================================= */
+
+    async function registrarEntrada() {
+      limpiarMensaje();
+
+      // Tomamos los valores del formulario
+      const placa = placaInput.value.trim().toUpperCase();
+      const tipo = tipoSelect.value;
+
+      // Validación de campos vacíos
+      if (!placa || !tipo) {
+        mostrarMensaje("Debes ingresar la placa y seleccionar el tipo de vehículo.", "error");
+        return;
+      }
+
+      // Primero consultamos cupos actuales
+      const { count: totalTipo, error: errorTipo } = await supabase
+        .from("parqueadero")
+        .select("*", { count: "exact", head: true })
+        .eq("tipo_vehiculo", tipo)
+        .eq("estado", "activo");
+
+      if (errorTipo) {
+        console.error("Error consultando cupo:", errorTipo);
+        mostrarMensaje("No fue posible validar el cupo disponible.", "error");
+        return;
+      }
+
+      // Validamos límite máximo por tipo de vehículo
+      if (tipo === "carro" && totalTipo >= 10) {
+        mostrarMensaje("No hay cupos disponibles para carros.", "error");
+        return;
+      }
+
+      if (tipo === "moto" && totalTipo >= 10) {
+        mostrarMensaje("No hay cupos disponibles para motos.", "error");
+        return;
+      }
+
+      // Validamos que la placa no esté ya activa
+      const existeActiva = await placaYaActiva(placa);
+
+      if (existeActiva) {
+        mostrarMensaje("Esa placa ya está registrada como activa en el parqueadero.", "error");
+        return;
+      }
+
+      // Insertamos el nuevo vehículo
+      const { error } = await supabase
+        .from("parqueadero")
+        .insert([
+          {
+            placa: placa,
+            tipo_vehiculo: tipo,
+            estado: "activo"
+          }
+        ]);
+
+      if (error) {
+        console.error("Error al registrar entrada:", error);
+        mostrarMensaje("Ocurrió un error al registrar la entrada.", "error");
+        return;
+      }
+
+      // Si todo sale bien, limpiamos formulario
+      placaInput.value = "";
+      tipoSelect.value = "";
+
+      mostrarMensaje("Vehículo registrado correctamente.", "success");
+
+      // Recargamos tabla y cupos
+      await cargarVehiculosActivos();
+      await cargarCupos();
+    }
+
+    /* =========================================================
+       10. REGISTRAR SALIDA
+       =========================================================
+       Esta función actualiza el vehículo:
+       - estado = retirado
+       - hora_salida = fecha actual
+    ========================================================= */
+
+    async function registrarSalida(id) {
+      limpiarMensaje();
+
+      const confirmar = confirm("¿Deseas registrar la salida de este vehículo?");
+      if (!confirmar) return;
+
+      const { error } = await supabase
+        .from("parqueadero")
+        .update({
+          estado: "retirado",
+          hora_salida: new Date().toISOString()
+        })
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error al registrar salida:", error);
+        mostrarMensaje("No se pudo registrar la salida.", "error");
+        return;
+      }
+
+      mostrarMensaje("Salida registrada correctamente.", "success");
+
+      await cargarVehiculosActivos();
+      await cargarCupos();
+    }
+
+    // Hacemos esta función global para poder llamarla desde el botón en la tabla
+    window.registrarSalida = registrarSalida;
+
+    /* =========================================================
+       11. EVENTO DEL BOTÓN REGISTRAR
+       =========================================================
+       Cuando el usuario haga clic en el botón, se ejecutará
+       la función registrarEntrada().
+    ========================================================= */
+
+    btnRegistrar.addEventListener("click", registrarEntrada);
+
+    /* =========================================================
+       12. INICIALIZACIÓN DE LA APP
+       =========================================================
+       Apenas carga la página:
+       - consultamos vehículos activos
+       - consultamos cupos
+    ========================================================= */
+
+    async function iniciarApp() {
+      await cargarVehiculosActivos();
+      await cargarCupos();
+    }
+
+    iniciarApp();
+  </script>
+</body>
+</html>
