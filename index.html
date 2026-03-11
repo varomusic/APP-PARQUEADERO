@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parqueadero App</title>
+  <title>Parqueadero App V2</title>
 
-  <!-- =========================
-       ESTILOS CSS DE LA APP
-       ========================= -->
   <style>
-    /* Reset básico para que todo se vea más ordenado */
+    /* =========================================================
+       ESTILOS GENERALES
+       ========================================================= */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -24,7 +23,7 @@
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
@@ -39,9 +38,35 @@
       margin-bottom: 24px;
     }
 
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .stat-box h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: #4b5563;
+    }
+
+    .stat-box p {
+      font-size: 28px;
+      font-weight: bold;
+      color: #111827;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 380px 1fr;
       gap: 20px;
     }
 
@@ -55,38 +80,6 @@
     .card h2 {
       margin-bottom: 16px;
       font-size: 22px;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .stat-box {
-      background: #eef4ff;
-      border-radius: 14px;
-      padding: 18px;
-      text-align: center;
-    }
-
-    .stat-box h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-      color: #374151;
-    }
-
-    .stat-box p {
-      font-size: 26px;
-      font-weight: bold;
-      color: #111827;
-    }
-
-    .available {
-      margin-top: 6px;
-      color: #2563eb;
-      font-size: 14px;
     }
 
     label {
@@ -179,11 +172,40 @@
       margin-top: 12px;
     }
 
-    @media (max-width: 900px) {
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-activo {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 950px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
       .grid {
         grid-template-columns: 1fr;
       }
+    }
 
+    @media (max-width: 600px) {
       .stats {
         grid-template-columns: 1fr;
       }
@@ -192,34 +214,47 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title">Sistema de Parqueadero</h1>
+    <h1 class="title">Sistema de Parqueadero V2</h1>
     <p class="subtitle">
-      Registro de entrada y salida de carros y motos con Supabase
+      Versión conectada a la nueva estructura profesional de Supabase
     </p>
 
-    <!-- =========================
-         RESUMEN DE CUPOS
-         ========================= -->
+    <!-- =========================================================
+         RESUMEN GENERAL
+         ========================================================= -->
     <div class="stats">
       <div class="stat-box">
-        <h3>Carros ocupados</h3>
-        <p id="carrosOcupados">0 / 10</p>
-        <div class="available" id="carrosDisponibles">Disponibles: 10</div>
+        <h3>Vehículos dentro</h3>
+        <p id="totalActivos">0</p>
       </div>
 
       <div class="stat-box">
-        <h3>Motos ocupadas</h3>
-        <p id="motosOcupadas">0 / 10</p>
-        <div class="available" id="motosDisponibles">Disponibles: 10</div>
+        <h3>Carros activos</h3>
+        <p id="carrosActivos">0</p>
+      </div>
+
+      <div class="stat-box">
+        <h3>Motos activas</h3>
+        <p id="motosActivas">0</p>
+      </div>
+
+      <div class="stat-box">
+        <h3>Otros vehículos</h3>
+        <p id="otrosActivos">0</p>
       </div>
     </div>
 
     <div class="grid">
-      <!-- =========================
+      <!-- =========================================================
            FORMULARIO DE ENTRADA
-           ========================= -->
+           ========================================================= -->
       <div class="card">
         <h2>Registrar entrada</h2>
+
+        <div class="info-box">
+          Esta versión registra entrada solo para vehículos que ya existan
+          en la tabla <strong>vehiculos</strong>.
+        </div>
 
         <label for="placa">Placa</label>
         <input
@@ -229,13 +264,6 @@
           maxlength="10"
         />
 
-        <label for="tipo">Tipo de vehículo</label>
-        <select id="tipo">
-          <option value="">Seleccione una opción</option>
-          <option value="carro">Carro</option>
-          <option value="moto">Moto</option>
-        </select>
-
         <button class="btn-primary" id="btnRegistrar">
           Registrar entrada
         </button>
@@ -243,9 +271,9 @@
         <div id="mensaje" class="message"></div>
       </div>
 
-      <!-- =========================
+      <!-- =========================================================
            TABLA DE VEHÍCULOS ACTIVOS
-           ========================= -->
+           ========================================================= -->
       <div class="card">
         <h2>Vehículos dentro del parqueadero</h2>
 
@@ -255,14 +283,13 @@
               <tr>
                 <th>Placa</th>
                 <th>Tipo</th>
-                <th>Hora entrada</th>
+                <th>Propietario</th>
+                <th>Entrada</th>
                 <th>Estado</th>
                 <th>Acción</th>
               </tr>
             </thead>
-            <tbody id="tablaVehiculos">
-              <!-- Aquí JavaScript insertará las filas -->
-            </tbody>
+            <tbody id="tablaVehiculos"></tbody>
           </table>
         </div>
 
@@ -271,63 +298,41 @@
     </div>
   </div>
 
-  <!-- =========================
+  <!-- =========================================================
        LIBRERÍA DE SUPABASE
-       Esta línea carga la librería oficial desde internet
-       para poder conectar nuestro HTML con Supabase.
-       ========================= -->
+       ========================================================= -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     /* =========================================================
        1. CONFIGURACIÓN DE SUPABASE
-       =========================================================
-       Aquí están:
-       - Project URL
-       - anon public key
-    ========================================================= */
+       ========================================================= */
 
     const SUPABASE_URL = "https://topszzjicjfvpigqkiok.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcHN6emppY2pmdnBpZ3FraW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNDkxODgsImV4cCI6MjA4ODcyNTE4OH0.E5o2APQ2RMgR2lFzqZwMnygUAFx2kTVGELCEJ1RmONM";
 
     /* =========================================================
        IMPORTANTE:
-       No usamos "const supabase = ..." porque la librería CDN
-       ya ocupa el nombre global "supabase".
-       Por eso usamos "supabaseClient".
+       Aquí debes pegar el ID del parqueadero demo que creaste
+       en la tabla "parqueaderos".
     ========================================================= */
+    const PARQUEADERO_ID = "68bd8c1b-6fe1-4a13-87ff-60865b43eaa1";
+
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    /* =========================================================
-       BLOQUE DE DIAGNÓSTICO
-       =========================================================
-       Esto ayuda a revisar en consola si la conexión está viva.
-       Puedes dejarlo por ahora mientras pruebas.
-    ========================================================= */
-    console.log("SUPABASE_URL:", SUPABASE_URL);
-    console.log("ANON KEY CARGADA:", !!SUPABASE_ANON_KEY);
-
-    async function pruebaConexion() {
-      const respuesta = await supabaseClient.from("parqueadero").select("*");
-      console.log("RESPUESTA PRUEBA:", respuesta);
-    }
-
-    pruebaConexion();
 
     /* =========================================================
        2. REFERENCIAS A ELEMENTOS DEL HTML
        ========================================================= */
     const placaInput = document.getElementById("placa");
-    const tipoSelect = document.getElementById("tipo");
     const btnRegistrar = document.getElementById("btnRegistrar");
     const mensaje = document.getElementById("mensaje");
     const tablaVehiculos = document.getElementById("tablaVehiculos");
     const sinDatos = document.getElementById("sinDatos");
 
-    const carrosOcupados = document.getElementById("carrosOcupados");
-    const motosOcupados = document.getElementById("motosOcupados");
-    const carrosDisponibles = document.getElementById("carrosDisponibles");
-    const motosDisponibles = document.getElementById("motosDisponibles");
+    const totalActivos = document.getElementById("totalActivos");
+    const carrosActivos = document.getElementById("carrosActivos");
+    const motosActivas = document.getElementById("motosActivas");
+    const otrosActivos = document.getElementById("otrosActivos");
 
     /* =========================================================
        3. FUNCIÓN PARA MOSTRAR MENSAJES
@@ -338,16 +343,13 @@
       mensaje.classList.add(tipo);
     }
 
-    /* =========================================================
-       4. FUNCIÓN PARA LIMPIAR MENSAJE
-       ========================================================= */
     function limpiarMensaje() {
       mensaje.textContent = "";
       mensaje.className = "message";
     }
 
     /* =========================================================
-       5. FORMATEAR FECHA A HORA DE COLOMBIA
+       4. FORMATEAR FECHA A HORA DE COLOMBIA
        ========================================================= */
     function formatearFechaColombia(fechaISO) {
       if (!fechaISO) return "";
@@ -364,100 +366,56 @@
     }
 
     /* =========================================================
-       6. CARGAR VEHÍCULOS ACTIVOS
-       ========================================================= */
-    async function cargarVehiculosActivos() {
-      try {
-        const { data, error } = await supabaseClient
-          .from("parqueadero")
-          .select("*")
-          .eq("estado", "activo")
-          .order("hora_entrada", { ascending: false });
+       5. BUSCAR VEHÍCULO POR PLACA
+       =========================================================
+       Esta función busca la placa en la tabla vehiculos,
+       dentro del parqueadero actual.
+    ========================================================= */
+    async function buscarVehiculoPorPlaca(placa) {
+  console.log("Buscando placa:", placa);
+  console.log("PARQUEADERO_ID actual:", PARQUEADERO_ID);
 
-        console.log("DATOS ACTIVOS:", data);
-        console.log("ERROR ACTIVOS:", error);
+  const { data, error } = await supabaseClient
+    .from("vehiculos")
+    .select(`
+      id,
+      placa,
+      propietario,
+      telefono,
+      modalidad_cobro,
+      parqueadero_id,
+      tipo_vehiculo_id
+    `)
+    .eq("parqueadero_id", PARQUEADERO_ID)
+    .eq("placa", placa)
+    .limit(1);
 
-        if (error) {
-          console.error("Error al cargar vehículos:", error);
-          mostrarMensaje("Error al cargar vehículos activos: " + error.message, "error");
-          return;
-        }
+  console.log("Resultado data:", data);
+  console.log("Resultado error:", error);
 
-        tablaVehiculos.innerHTML = "";
+  if (error) {
+    console.error("Error al buscar vehículo:", error);
+    return null;
+  }
 
-        if (!data || data.length === 0) {
-          sinDatos.style.display = "block";
-        } else {
-          sinDatos.style.display = "none";
-        }
-
-        data.forEach((vehiculo) => {
-          const fila = document.createElement("tr");
-
-          fila.innerHTML = `
-            <td>${vehiculo.placa}</td>
-            <td>${vehiculo.tipo_vehiculo}</td>
-            <td>${formatearFechaColombia(vehiculo.hora_entrada)}</td>
-            <td>${vehiculo.estado}</td>
-            <td>
-              <button class="btn-danger" onclick="registrarSalida(${vehiculo.id})">
-                Registrar salida
-              </button>
-            </td>
-          `;
-
-          tablaVehiculos.appendChild(fila);
-        });
-      } catch (e) {
-        console.error("EXCEPCIÓN AL CARGAR VEHÍCULOS:", e);
-        mostrarMensaje("Error inesperado al cargar vehículos: " + e.message, "error");
-      }
-    }
+  return data.length > 0 ? data[0] : null;
+}
 
     /* =========================================================
-       7. CONTAR CUPOS DE CARROS Y MOTOS
-       ========================================================= */
-    async function cargarCupos() {
-      const { count: totalCarros, error: errorCarros } = await supabaseClient
-        .from("parqueadero")
-        .select("*", { count: "exact", head: true })
-        .eq("tipo_vehiculo", "carro")
-        .eq("estado", "activo");
-
-      const { count: totalMotos, error: errorMotos } = await supabaseClient
-        .from("parqueadero")
-        .select("*", { count: "exact", head: true })
-        .eq("tipo_vehiculo", "moto")
-        .eq("estado", "activo");
-
-      if (errorCarros || errorMotos) {
-        console.error("Error al cargar cupos:", errorCarros || errorMotos);
-        mostrarMensaje("Error al cargar cupos.", "error");
-        return;
-      }
-
-      const carros = totalCarros || 0;
-      const motos = totalMotos || 0;
-
-      carrosOcupados.textContent = `${carros} / 10`;
-      motosOcupados.textContent = `${motos} / 10`;
-
-      carrosDisponibles.textContent = `Disponibles: ${10 - carros}`;
-      motosDisponibles.textContent = `Disponibles: ${10 - motos}`;
-    }
-
-    /* =========================================================
-       8. VALIDAR SI YA EXISTE UNA PLACA ACTIVA
-       ========================================================= */
-    async function placaYaActiva(placa) {
+       6. VALIDAR SI EL VEHÍCULO YA TIENE UN MOVIMIENTO ACTIVO
+       =========================================================
+       Evita registrar dos entradas al mismo tiempo para la misma placa.
+    ========================================================= */
+    async function vehiculoYaEstaDentro(vehiculoId) {
       const { data, error } = await supabaseClient
-        .from("parqueadero")
+        .from("movimientos_parqueo")
         .select("id")
-        .eq("placa", placa)
+        .eq("parqueadero_id", PARQUEADERO_ID)
+        .eq("vehiculo_id", vehiculoId)
         .eq("estado", "activo");
 
       if (error) {
-        console.error("Error validando placa:", error);
+        console.error("Error validando movimiento activo:", error);
         return false;
       }
 
@@ -465,54 +423,46 @@
     }
 
     /* =========================================================
-       9. REGISTRAR ENTRADA
-       ========================================================= */
+       7. REGISTRAR ENTRADA
+       =========================================================
+       Flujo:
+       - toma la placa
+       - busca el vehículo
+       - valida que exista
+       - valida que no esté ya dentro
+       - crea el movimiento de entrada
+    ========================================================= */
     async function registrarEntrada() {
       limpiarMensaje();
 
       const placa = placaInput.value.trim().toUpperCase();
-      const tipo = tipoSelect.value;
 
-      if (!placa || !tipo) {
-        mostrarMensaje("Debes ingresar la placa y seleccionar el tipo de vehículo.", "error");
+      if (!placa) {
+        mostrarMensaje("Debes ingresar una placa.", "error");
         return;
       }
 
-      const { count: totalTipo, error: errorTipo } = await supabaseClient
-        .from("parqueadero")
-        .select("*", { count: "exact", head: true })
-        .eq("tipo_vehiculo", tipo)
-        .eq("estado", "activo");
+      const vehiculo = await buscarVehiculoPorPlaca(placa);
 
-      if (errorTipo) {
-        console.error("Error consultando cupo:", errorTipo);
-        mostrarMensaje("No fue posible validar el cupo disponible: " + errorTipo.message, "error");
+      if (!vehiculo) {
+        mostrarMensaje("La placa no está registrada en la tabla vehiculos.", "error");
         return;
       }
 
-      if (tipo === "carro" && totalTipo >= 10) {
-        mostrarMensaje("No hay cupos disponibles para carros.", "error");
-        return;
-      }
+      const yaDentro = await vehiculoYaEstaDentro(vehiculo.id);
 
-      if (tipo === "moto" && totalTipo >= 10) {
-        mostrarMensaje("No hay cupos disponibles para motos.", "error");
-        return;
-      }
-
-      const existeActiva = await placaYaActiva(placa);
-
-      if (existeActiva) {
-        mostrarMensaje("Esa placa ya está registrada como activa en el parqueadero.", "error");
+      if (yaDentro) {
+        mostrarMensaje("Ese vehículo ya tiene una entrada activa.", "error");
         return;
       }
 
       const { error } = await supabaseClient
-        .from("parqueadero")
+        .from("movimientos_parqueo")
         .insert([
           {
-            placa: placa,
-            tipo_vehiculo: tipo,
+            parqueadero_id: PARQUEADERO_ID,
+            vehiculo_id: vehiculo.id,
+            modalidad_cobro: vehiculo.modalidad_cobro || "boletas",
             estado: "activo"
           }
         ]);
@@ -524,30 +474,99 @@
       }
 
       placaInput.value = "";
-      tipoSelect.value = "";
-
-      mostrarMensaje("Vehículo registrado correctamente.", "success");
+      mostrarMensaje("Entrada registrada correctamente.", "success");
 
       await cargarVehiculosActivos();
-      await cargarCupos();
+      await cargarResumen();
     }
 
     /* =========================================================
-       10. REGISTRAR SALIDA
-       ========================================================= */
-    async function registrarSalida(id) {
+       8. CARGAR VEHÍCULOS ACTIVOS
+       =========================================================
+       Trae los movimientos activos y además la información del vehículo
+       y del tipo de vehículo relacionado.
+    ========================================================= */
+    async function cargarVehiculosActivos() {
+      const { data, error } = await supabaseClient
+        .from("movimientos_parqueo")
+        .select(`
+          id,
+          fecha_entrada,
+          fecha_salida,
+          estado,
+          modalidad_cobro,
+          vehiculos (
+            id,
+            placa,
+            propietario,
+            tipo_vehiculo_id,
+            tipos_vehiculo (
+              id,
+              nombre
+            )
+          )
+        `)
+        .eq("parqueadero_id", PARQUEADERO_ID)
+        .eq("estado", "activo")
+        .order("fecha_entrada", { ascending: false });
+
+      if (error) {
+        console.error("Error al cargar vehículos activos:", error);
+        mostrarMensaje("Error al cargar vehículos activos: " + error.message, "error");
+        return;
+      }
+
+      tablaVehiculos.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        sinDatos.style.display = "block";
+      } else {
+        sinDatos.style.display = "none";
+      }
+
+      data.forEach((movimiento) => {
+        const vehiculo = movimiento.vehiculos;
+        const tipo = vehiculo?.tipos_vehiculo?.nombre || "Sin tipo";
+
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${vehiculo?.placa || ""}</td>
+          <td>${tipo}</td>
+          <td>${vehiculo?.propietario || ""}</td>
+          <td>${formatearFechaColombia(movimiento.fecha_entrada)}</td>
+          <td><span class="badge badge-activo">${movimiento.estado}</span></td>
+          <td>
+            <button class="btn-danger" onclick="registrarSalida('${movimiento.id}')">
+              Registrar salida
+            </button>
+          </td>
+        `;
+
+        tablaVehiculos.appendChild(fila);
+      });
+    }
+
+    /* =========================================================
+       9. REGISTRAR SALIDA
+       =========================================================
+       Actualiza el movimiento:
+       - estado = retirado
+       - fecha_salida = ahora
+    ========================================================= */
+    async function registrarSalida(movimientoId) {
       limpiarMensaje();
 
       const confirmar = confirm("¿Deseas registrar la salida de este vehículo?");
       if (!confirmar) return;
 
       const { error } = await supabaseClient
-        .from("parqueadero")
+        .from("movimientos_parqueo")
         .update({
           estado: "retirado",
-          hora_salida: new Date().toISOString()
+          fecha_salida: new Date().toISOString()
         })
-        .eq("id", id);
+        .eq("id", movimientoId)
+        .eq("parqueadero_id", PARQUEADERO_ID);
 
       if (error) {
         console.error("Error al registrar salida:", error);
@@ -558,10 +577,65 @@
       mostrarMensaje("Salida registrada correctamente.", "success");
 
       await cargarVehiculosActivos();
-      await cargarCupos();
+      await cargarResumen();
     }
 
     window.registrarSalida = registrarSalida;
+
+    /* =========================================================
+       10. CARGAR RESUMEN DEL DASHBOARD
+       =========================================================
+       Cuenta:
+       - total activos
+       - carros
+       - motos
+       - otros
+    ========================================================= */
+    async function cargarResumen() {
+      const { data, error } = await supabaseClient
+        .from("movimientos_parqueo")
+        .select(`
+          id,
+          estado,
+          vehiculos (
+            tipo_vehiculo_id,
+            tipos_vehiculo (
+              nombre
+            )
+          )
+        `)
+        .eq("parqueadero_id", PARQUEADERO_ID)
+        .eq("estado", "activo");
+
+      if (error) {
+        console.error("Error al cargar resumen:", error);
+        return;
+      }
+
+      let total = 0;
+      let carros = 0;
+      let motos = 0;
+      let otros = 0;
+
+      data.forEach((movimiento) => {
+        total++;
+
+        const tipo = movimiento.vehiculos?.tipos_vehiculo?.nombre?.toLowerCase() || "";
+
+        if (tipo === "carro") {
+          carros++;
+        } else if (tipo === "moto") {
+          motos++;
+        } else {
+          otros++;
+        }
+      });
+
+      totalActivos.textContent = total;
+      carrosActivos.textContent = carros;
+      motosActivas.textContent = motos;
+      otrosActivos.textContent = otros;
+    }
 
     /* =========================================================
        11. EVENTO DEL BOTÓN REGISTRAR
@@ -569,11 +643,12 @@
     btnRegistrar.addEventListener("click", registrarEntrada);
 
     /* =========================================================
-       12. INICIALIZACIÓN DE LA APP
+       12. INICIALIZAR APP
        ========================================================= */
     async function iniciarApp() {
+      console.log("PARQUEADERO_ID:", PARQUEADERO_ID);
       await cargarVehiculosActivos();
-      await cargarCupos();
+      await cargarResumen();
     }
 
     iniciarApp();
